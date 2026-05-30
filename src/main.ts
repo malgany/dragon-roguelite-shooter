@@ -4,6 +4,9 @@ import { BootScene } from "./scenes/BootScene";
 import { GameScene } from "./scenes/GameScene";
 import { MenuScene } from "./scenes/MenuScene";
 import { UpgradeScene } from "./scenes/UpgradeScene";
+import { getViewportSize } from "./game/immersive";
+
+const initialSize = getViewportSize();
 
 const game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -12,8 +15,9 @@ const game = new Phaser.Game({
   scale: {
     mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: window.innerWidth,
-    height: window.innerHeight
+    width: initialSize.width,
+    height: initialSize.height,
+    fullscreenTarget: "app"
   },
   physics: {
     default: "arcade",
@@ -27,6 +31,13 @@ const game = new Phaser.Game({
   scene: [BootScene, MenuScene, GameScene, UpgradeScene]
 });
 
-window.addEventListener("orientationchange", () => {
-  setTimeout(() => game.scale.refresh(), 250);
-});
+const resizeGame = () => {
+  const { width, height } = getViewportSize();
+  game.scale.resize(width, height);
+  game.scale.refresh();
+};
+
+window.addEventListener("resize", resizeGame);
+window.visualViewport?.addEventListener("resize", resizeGame);
+document.addEventListener("fullscreenchange", resizeGame);
+window.addEventListener("orientationchange", () => setTimeout(resizeGame, 250));

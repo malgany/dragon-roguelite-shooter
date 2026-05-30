@@ -1,0 +1,10 @@
+{
+  "name": "Dragao da Aurora",
+  "short_name": "Dragao",
+  "start_url": "/dragon-roguelite-shooter/",
+  "scope": "/dragon-roguelite-shooter/",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#101820",
+  "theme_color": "#101820"
+}

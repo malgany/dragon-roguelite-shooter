@@ -58,7 +58,9 @@ export class GameScene extends Phaser.Scene {
   private hpText!: Phaser.GameObjects.Text;
   private scoreText!: Phaser.GameObjects.Text;
   private levelText!: Phaser.GameObjects.Text;
+  private bossBarTrack!: Phaser.GameObjects.Rectangle;
   private bossBar!: Phaser.GameObjects.Rectangle;
+  private bottomShade!: Phaser.GameObjects.Rectangle;
 
   constructor() {
     super("GameScene");
@@ -77,6 +79,8 @@ export class GameScene extends Phaser.Scene {
     this.createWorld();
     this.createActors();
     this.createHud();
+    this.scale.on("resize", this.resizeLayout, this);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off("resize", this.resizeLayout, this));
     this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
       if (pointer.isDown) this.target.set(pointer.x, pointer.y);
     });
@@ -104,11 +108,11 @@ export class GameScene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, width, height);
     this.cameras.main.setBounds(0, 0, width, height);
 
-    this.sky = this.add.tileSprite(centerX, centerY, width, height, "bg-sky").setDisplaySize(width, height);
-    this.mountains = this.add.tileSprite(centerX, centerY + height * 0.08, width, height, "bg-mountains").setDisplaySize(width, height);
-    this.midforest = this.add.tileSprite(centerX, centerY + height * 0.15, width, height, "bg-midforest").setDisplaySize(width, height);
-    this.foreground = this.add.tileSprite(centerX, centerY + height * 0.18, width, height, "bg-foreground").setDisplaySize(width, height);
-    this.add.rectangle(centerX, height - 18, width, 36, 0x101820, 0.36);
+    this.sky = this.add.tileSprite(centerX, centerY, width, height, "bg-sky").setDisplaySize(width, height).setDepth(0);
+    this.mountains = this.add.tileSprite(centerX, height * 0.62, width, height * 0.62, "bg-mountains").setAlpha(0.88).setDepth(1);
+    this.midforest = this.add.tileSprite(centerX, height * 0.78, width, height * 0.42, "bg-midforest").setAlpha(0.74).setDepth(2);
+    this.foreground = this.add.tileSprite(centerX, height * 0.91, width, height * 0.28, "bg-foreground").setAlpha(0.42).setDepth(3);
+    this.bottomShade = this.add.rectangle(centerX, height - 10, width, 20, 0x101820, 0.22).setDepth(4);
   }
 
   private createActors() {
@@ -118,6 +122,7 @@ export class GameScene extends Phaser.Scene {
     this.player = this.physics.add
       .sprite(Math.min(150, this.scale.width * 0.18), this.scale.height * 0.5, "dragon", 0)
       .setScale(0.14)
+      .setDepth(10)
       .play("dragon-fly");
     this.player.body?.setSize(230, 210).setOffset(150, 260);
     this.player.setCollideWorldBounds(true);
@@ -142,8 +147,34 @@ export class GameScene extends Phaser.Scene {
     this.hpText = this.add.text(18, 14, "", textStyle).setScrollFactor(0);
     this.scoreText = this.add.text(width / 2, 14, "", textStyle).setOrigin(0.5, 0).setScrollFactor(0);
     this.levelText = this.add.text(width - 18, 14, "", textStyle).setOrigin(1, 0).setScrollFactor(0);
-    this.add.rectangle(width / 2, 50, 360, 12, 0x331717, 0.82).setScrollFactor(0);
-    this.bossBar = this.add.rectangle(width / 2 - 180, 50, 0, 12, 0xff684a, 0.95).setOrigin(0, 0.5).setScrollFactor(0);
+    this.bossBarTrack = this.add.rectangle(width / 2, 50, Math.min(360, width * 0.42), 12, 0x331717, 0.82).setScrollFactor(0);
+    this.bossBar = this.add
+      .rectangle(width / 2 - this.bossBarTrack.width / 2, 50, 0, 12, 0xff684a, 0.95)
+      .setOrigin(0, 0.5)
+      .setScrollFactor(0);
+  }
+
+  private resizeLayout() {
+    const width = this.scale.width;
+    const height = this.scale.height;
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    this.physics.world.setBounds(0, 0, width, height);
+    this.cameras.main.setBounds(0, 0, width, height);
+
+    this.sky?.setPosition(centerX, centerY).setSize(width, height).setDisplaySize(width, height);
+    this.mountains?.setPosition(centerX, height * 0.62).setSize(width, height * 0.62).setDisplaySize(width, height * 0.62);
+    this.midforest?.setPosition(centerX, height * 0.78).setSize(width, height * 0.42).setDisplaySize(width, height * 0.42);
+    this.foreground?.setPosition(centerX, height * 0.91).setSize(width, height * 0.28).setDisplaySize(width, height * 0.28);
+    this.bottomShade?.setPosition(centerX, height - 10).setSize(width, 20);
+
+    this.scoreText?.setPosition(width / 2, 14);
+    this.levelText?.setPosition(width - 18, 14);
+    if (this.bossBarTrack) {
+      this.bossBarTrack.setPosition(width / 2, 50).setSize(Math.min(360, width * 0.42), 12);
+    }
+    this.bossBar?.setPosition(width / 2 - (this.bossBarTrack?.width ?? 360) / 2, 50);
   }
 
   private scrollBackground(delta: number) {
@@ -349,7 +380,7 @@ export class GameScene extends Phaser.Scene {
     this.hpText.setText(`HP ${this.playerState.health}/${this.playerState.maxHealth}  ESC ${this.playerState.shields}`);
     this.scoreText.setText(`${this.score}`);
     this.levelText.setText(`Fase ${this.level}`);
-    if (this.boss?.active) this.bossBar.width = 360 * Math.max(0, this.boss.hp / this.boss.maxHp);
+    if (this.boss?.active) this.bossBar.width = this.bossBarTrack.width * Math.max(0, this.boss.hp / this.boss.maxHp);
     else this.bossBar.width = 0;
   }
 }
