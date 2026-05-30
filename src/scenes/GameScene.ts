@@ -329,7 +329,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private updateHud() {
-    this.hpText.setText(`❤ ${this.playerState.health}/${this.playerState.maxHealth}  🛡 ${this.playerState.shields}`);
+    this.hpText.setText(`HP ${this.playerState.health}/${this.playerState.maxHealth}  ESC ${this.playerState.shields}`);
     this.scoreText.setText(`${this.score}`);
     this.levelText.setText(`Fase ${this.level}`);
     if (this.boss?.active) this.bossBar.width = 360 * Math.max(0, this.boss.hp / this.boss.maxHp);
