@@ -53,7 +53,8 @@ export class GameScene extends Phaser.Scene {
   private target = new Phaser.Math.Vector2(170, 270);
   private sky!: Phaser.GameObjects.TileSprite;
   private mountains!: Phaser.GameObjects.TileSprite;
-  private forest!: Phaser.GameObjects.TileSprite;
+  private midforest!: Phaser.GameObjects.TileSprite;
+  private foreground!: Phaser.GameObjects.TileSprite;
   private hpText!: Phaser.GameObjects.Text;
   private scoreText!: Phaser.GameObjects.Text;
   private levelText!: Phaser.GameObjects.Text;
@@ -95,17 +96,29 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createWorld() {
-    this.sky = this.add.tileSprite(480, 120, 960, 240, "bg-sky").setDisplaySize(960, 240);
-    this.mountains = this.add.tileSprite(480, 280, 960, 300, "bg-mountains").setDisplaySize(960, 300);
-    this.forest = this.add.tileSprite(480, 410, 960, 260, "bg-forest").setDisplaySize(960, 260);
-    this.add.rectangle(480, 520, 960, 40, 0x101820, 0.42);
+    const width = this.scale.width;
+    const height = this.scale.height;
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    this.physics.world.setBounds(0, 0, width, height);
+    this.cameras.main.setBounds(0, 0, width, height);
+
+    this.sky = this.add.tileSprite(centerX, centerY, width, height, "bg-sky").setDisplaySize(width, height);
+    this.mountains = this.add.tileSprite(centerX, centerY + height * 0.08, width, height, "bg-mountains").setDisplaySize(width, height);
+    this.midforest = this.add.tileSprite(centerX, centerY + height * 0.15, width, height, "bg-midforest").setDisplaySize(width, height);
+    this.foreground = this.add.tileSprite(centerX, centerY + height * 0.18, width, height, "bg-foreground").setDisplaySize(width, height);
+    this.add.rectangle(centerX, height - 18, width, 36, 0x101820, 0.36);
   }
 
   private createActors() {
     this.flames = this.physics.add.group();
     this.enemies = this.physics.add.group();
     this.enemyBolts = this.physics.add.group();
-    this.player = this.physics.add.sprite(150, 270, "dragon", 0).setScale(0.14).play("dragon-fly");
+    this.player = this.physics.add
+      .sprite(Math.min(150, this.scale.width * 0.18), this.scale.height * 0.5, "dragon", 0)
+      .setScale(0.14)
+      .play("dragon-fly");
     this.player.body?.setSize(230, 210).setOffset(150, 260);
     this.player.setCollideWorldBounds(true);
 
@@ -124,24 +137,26 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createHud() {
+    const width = this.scale.width;
     const textStyle = { fontFamily: "Arial, sans-serif", fontSize: "20px", color: "#ffe9a8" };
     this.hpText = this.add.text(18, 14, "", textStyle).setScrollFactor(0);
-    this.scoreText = this.add.text(480, 14, "", textStyle).setOrigin(0.5, 0).setScrollFactor(0);
-    this.levelText = this.add.text(942, 14, "", textStyle).setOrigin(1, 0).setScrollFactor(0);
-    this.add.rectangle(480, 50, 360, 12, 0x331717, 0.82).setScrollFactor(0);
-    this.bossBar = this.add.rectangle(300, 50, 0, 12, 0xff684a, 0.95).setOrigin(0, 0.5).setScrollFactor(0);
+    this.scoreText = this.add.text(width / 2, 14, "", textStyle).setOrigin(0.5, 0).setScrollFactor(0);
+    this.levelText = this.add.text(width - 18, 14, "", textStyle).setOrigin(1, 0).setScrollFactor(0);
+    this.add.rectangle(width / 2, 50, 360, 12, 0x331717, 0.82).setScrollFactor(0);
+    this.bossBar = this.add.rectangle(width / 2 - 180, 50, 0, 12, 0xff684a, 0.95).setOrigin(0, 0.5).setScrollFactor(0);
   }
 
   private scrollBackground(delta: number) {
     this.sky.tilePositionX += delta * 0.012;
     this.mountains.tilePositionX += delta * 0.035;
-    this.forest.tilePositionX += delta * 0.075;
+    this.midforest.tilePositionX += delta * 0.06;
+    this.foreground.tilePositionX += delta * 0.105;
   }
 
   private movePlayer(delta: number) {
-    const maxX = 455;
-    this.target.x = Phaser.Math.Clamp(this.target.x, 70, maxX);
-    this.target.y = Phaser.Math.Clamp(this.target.y, 70, 485);
+    const maxX = Math.min(this.scale.width * 0.48, 455);
+    this.target.x = Phaser.Math.Clamp(this.target.x, 38, maxX);
+    this.target.y = Phaser.Math.Clamp(this.target.y, 30, this.scale.height - 30);
     const t = 1 - Math.pow(0.001, delta / 1000);
     this.player.x = Phaser.Math.Linear(this.player.x, this.target.x, t * (this.playerState.speed / 260));
     this.player.y = Phaser.Math.Linear(this.player.y, this.target.y, t * (this.playerState.speed / 260));
@@ -185,8 +200,8 @@ export class GameScene extends Phaser.Scene {
     const count = Phaser.Math.Between(2, Math.min(6, 3 + this.level));
     const pattern = Phaser.Math.Between(0, 2);
     for (let i = 0; i < count; i++) {
-      const y = pattern === 0 ? 110 + i * 62 : Phaser.Math.Between(75, 465);
-      this.spawnEnemy(1040 + i * 58, y, Phaser.Math.Between(0, 5));
+      const y = pattern === 0 ? 70 + i * 62 : Phaser.Math.Between(55, this.scale.height - 55);
+      this.spawnEnemy(this.scale.width + 80 + i * 58, y, Phaser.Math.Between(0, 5));
     }
   }
 
@@ -213,7 +228,7 @@ export class GameScene extends Phaser.Scene {
 
   private spawnBoss() {
     this.bossSpawned = true;
-    this.boss = this.physics.add.image(1040, 270, "boss").setScale(0.28) as Boss;
+    this.boss = this.physics.add.image(this.scale.width + 140, this.scale.height / 2, "boss").setScale(0.28) as Boss;
     this.boss.hp = 18 + this.level * 9;
     this.boss.maxHp = this.boss.hp;
     this.boss.nextShot = 0;
@@ -225,10 +240,10 @@ export class GameScene extends Phaser.Scene {
 
   private updateBoss(time: number) {
     if (!this.boss?.active) return;
-    if (this.boss.x > 780) this.boss.setVelocityX(-70);
+    if (this.boss.x > this.scale.width - 180) this.boss.setVelocityX(-70);
     else {
       this.boss.setVelocityX(0);
-      this.boss.y = 270 + Math.sin(time / 600) * 95;
+      this.boss.y = this.scale.height / 2 + Math.sin(time / 600) * Math.min(110, this.scale.height * 0.23);
     }
     if (time > this.boss.nextShot) {
       this.boss.nextShot = time + Math.max(520, 1100 - this.level * 65);
@@ -297,11 +312,13 @@ export class GameScene extends Phaser.Scene {
 
   private gameOver() {
     this.physics.pause();
-    this.add.rectangle(480, 270, 960, 540, 0x090b10, 0.76);
-    this.add.text(480, 205, "FIM DA JORNADA", { fontSize: "44px", color: "#ffe9a8", fontStyle: "bold" }).setOrigin(0.5);
-    this.add.text(480, 270, `Pontuação: ${this.score}`, { fontSize: "26px", color: "#f6e6b6" }).setOrigin(0.5);
+    const width = this.scale.width;
+    const height = this.scale.height;
+    this.add.rectangle(width / 2, height / 2, width, height, 0x090b10, 0.76);
+    this.add.text(width / 2, height * 0.38, "FIM DA JORNADA", { fontSize: "44px", color: "#ffe9a8", fontStyle: "bold" }).setOrigin(0.5);
+    this.add.text(width / 2, height * 0.5, `Pontuacao: ${this.score}`, { fontSize: "26px", color: "#f6e6b6" }).setOrigin(0.5);
     const restart = this.add
-      .text(480, 350, "TOCAR PARA RECOMEÇAR", { fontSize: "28px", color: "#ffcf63", fontStyle: "bold" })
+      .text(width / 2, height * 0.65, "TOCAR PARA RECOMECAR", { fontSize: "28px", color: "#ffcf63", fontStyle: "bold" })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
     restart.on("pointerdown", () => this.scene.start("GameScene", { fresh: true }));
@@ -322,7 +339,7 @@ export class GameScene extends Phaser.Scene {
     [this.flames, this.enemies, this.enemyBolts].forEach((group) => {
       group.children.each((child) => {
         const obj = child as Phaser.GameObjects.GameObject & { x: number; y: number; destroy: () => void };
-        if (obj.x < -180 || obj.x > 1180 || obj.y < -160 || obj.y > 700) obj.destroy();
+        if (obj.x < -180 || obj.x > this.scale.width + 220 || obj.y < -160 || obj.y > this.scale.height + 180) obj.destroy();
         return true;
       });
     });

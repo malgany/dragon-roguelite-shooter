@@ -20,10 +20,14 @@ export class UpgradeScene extends Phaser.Scene {
   }
 
   create() {
-    this.add.tileSprite(480, 270, 960, 540, "bg-mountains").setAlpha(0.6);
-    this.add.rectangle(480, 270, 960, 540, 0x101820, 0.68);
+    const { width, height } = this.scale;
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    this.add.tileSprite(centerX, centerY, width, height, "bg-mountains").setAlpha(0.6);
+    this.add.rectangle(centerX, centerY, width, height, 0x101820, 0.68);
     this.add
-      .text(480, 68, "Escolha uma bênção dracônica", {
+      .text(centerX, height * 0.13, "Escolha uma bencao draconica", {
         fontFamily: "Georgia, serif",
         fontSize: "38px",
         color: "#ffe9a8",
@@ -31,14 +35,15 @@ export class UpgradeScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
     this.add
-      .text(480, 112, `Fase ${this.level - 1} vencida`, {
+      .text(centerX, height * 0.21, `Fase ${this.level - 1} vencida`, {
         fontFamily: "Arial, sans-serif",
         fontSize: "20px",
         color: "#f6e6b6"
       })
       .setOrigin(0.5);
 
-    this.choices.forEach((upgrade, index) => this.createCard(upgrade, 210 + index * 270, 305));
+    const spacing = Math.min(270, width * 0.28);
+    this.choices.forEach((upgrade, index) => this.createCard(upgrade, centerX + (index - 1) * spacing, height * 0.58));
   }
 
   private createCard(upgrade: Upgrade, x: number, y: number) {
@@ -80,7 +85,7 @@ export class UpgradeScene extends Phaser.Scene {
       targets: [card, icon, title, description],
       y: "-=7",
       duration: 950,
-      delay: (x - 210) * 1.5,
+      delay: x * 1.5,
       yoyo: true,
       repeat: -1,
       ease: "Sine.easeInOut"

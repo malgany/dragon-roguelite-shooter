@@ -6,11 +6,16 @@ export class MenuScene extends Phaser.Scene {
   }
 
   create() {
-    this.add.image(480, 270, "title").setDisplaySize(960, 540);
+    const { width, height } = this.scale;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const buttonY = height * 0.78;
 
-    const panel = this.add.rectangle(480, 428, 340, 76, 0x171c24, 0.82).setStrokeStyle(3, 0xf4bd4a);
+    this.add.image(centerX, centerY, "title").setDisplaySize(width, height);
+
+    const panel = this.add.rectangle(centerX, buttonY, 340, 76, 0x171c24, 0.82).setStrokeStyle(3, 0xf4bd4a);
     const label = this.add
-      .text(480, 428, "JOGAR", {
+      .text(centerX, buttonY, "JOGAR", {
         fontFamily: "Georgia, serif",
         fontSize: "34px",
         color: "#ffe9a8",
@@ -18,7 +23,7 @@ export class MenuScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    const button = this.add.zone(480, 428, 340, 76).setInteractive({ useHandCursor: true });
+    const button = this.add.zone(centerX, buttonY, 340, 76).setInteractive({ useHandCursor: true });
     button.on("pointerover", () => panel.setFillStyle(0x263343, 0.92));
     button.on("pointerout", () => panel.setFillStyle(0x171c24, 0.82));
     button.on("pointerdown", async () => {
@@ -31,7 +36,7 @@ export class MenuScene extends Phaser.Scene {
     });
 
     this.add
-      .text(480, 502, "Vire o celular na horizontal para jogar em tela cheia", {
+      .text(centerX, height - 34, "Vire o celular na horizontal para jogar em tela cheia", {
         fontFamily: "Arial, sans-serif",
         fontSize: "18px",
         color: "#f6e6b6"

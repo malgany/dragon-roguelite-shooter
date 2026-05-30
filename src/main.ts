@@ -10,10 +10,10 @@ const game = new Phaser.Game({
   parent: "app",
   backgroundColor: "#101820",
   scale: {
-    mode: Phaser.Scale.FIT,
+    mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: 960,
-    height: 540
+    width: window.innerWidth,
+    height: window.innerHeight
   },
   physics: {
     default: "arcade",

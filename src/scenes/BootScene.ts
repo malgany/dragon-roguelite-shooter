@@ -9,7 +9,8 @@ export class BootScene extends Phaser.Scene {
     this.load.image("title", "assets/title.png");
     this.load.image("bg-sky", "assets/bg-sky.png");
     this.load.image("bg-mountains", "assets/bg-mountains.png");
-    this.load.image("bg-forest", "assets/bg-forest.png");
+    this.load.image("bg-midforest", "assets/bg-midforest.png");
+    this.load.image("bg-foreground", "assets/bg-foreground.png");
     this.load.spritesheet("dragon", "assets/dragon.png", { frameWidth: 543, frameHeight: 724 });
     this.load.spritesheet("enemies", "assets/enemies.png", { frameWidth: 512, frameHeight: 512 });
     this.load.spritesheet("icons", "assets/icons.png", { frameWidth: 418, frameHeight: 418 });
