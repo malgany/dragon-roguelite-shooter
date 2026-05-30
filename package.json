@@ -1,0 +1,22 @@
+{
+  "name": "dragon-roguelite-shooter",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "process-assets": "node scripts/process-assets.mjs"
+  },
+  "dependencies": {
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "playwright": "^1.60.0",
+    "sharp": "^0.34.5",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.4"
+  }
+}
